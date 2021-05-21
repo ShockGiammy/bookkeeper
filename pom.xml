@@ -199,6 +199,9 @@
     <spotbugs-maven-plugin.version>3.1.8</spotbugs-maven-plugin.version>
     <forkCount.variable>1</forkCount.variable>
     <servlet-api.version>4.0.0</servlet-api.version>
+    <sonar.projectKey>ShockGiammy_bookkeeper</sonar.projectKey>
+    <sonar.organization>shockgiammy</sonar.organization>
+    <sonar.host.url>https://sonarcloud.io</sonar.host.url>
   </properties>
 
   <!-- dependency definitions -->

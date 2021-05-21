@@ -1,13 +1,12 @@
 language: java
 install: true
-addons:
-  sonarcloud:
-    organization: shockgiammy
-    token: 
-      secure: "VkNLm+Zyu48WJV1JQ867w7As4zk1BZVO8/ZxDHORhuP2L+BzgyyDkSDX79/Lk+tFqivtfLW+c6UvBRYRXrX7ZoeS/b7DNqQ2t0gVokokp4clQCwszlgYJ1bBWLPBjNRnFbF6JSXtqyIr+OmZl2kMaaR/vWKoCxdN7/EAoC2CZ4iPZSR/e/VPPJIPu59roEEnSGCRy/HKFdBHnmBeyBnMm9OXEjkFgPDbzXqZxSJ2YVnfFzXEaTfi0+ipk4CceyvNwS6t5AcjlW81Eg1wRYksiEpnaoorMtjqeP1tMuUdDjyroCEdMZOGudSuhC0gzW7LOx7dTAnK8Xb6Zr7g8JhiQsiYhY7o3rFR8Yj8Y4XDoxEN5JiGmHYCrLiXXp/LezYWNGQr/bhie3f9BqpcYjCr5uyh1fF+OTEC6bete27FnNRv+INV456st8NZHgrr5bfjoOhbpMgEtnqR8Bh1V2vmM/4mJCxJMVHVUN3xOp8PgKGcMV4vyRU7cx8kIMXqaFju/wyzeVpbhfrs/0KNFctCPCRBoK+TJJURuM3mZ4PuVVg05HwmHpcO+CY5PD9QMVTcWrvJpPqb+D1K3NqNz40ZEXiI6gd8Z39Ye8r3uV2nRaTwWJbmKH2msS1umjIrdRIoAfhyU6SXPFCUlP0BxU1de3pKWlRxokuVy2k6hF7dWVo="
+#addons:
+#  sonarcloud:
+#    organization: shockgiammy
+#    token: 
+#      secure: "VkNLm+Zyu48WJV1JQ867w7As4zk1BZVO8/ZxDHORhuP2L+BzgyyDkSDX79/Lk+tFqivtfLW+c6UvBRYRXrX7ZoeS/b7DNqQ2t0gVokokp4clQCwszlgYJ1bBWLPBjNRnFbF6JSXtqyIr+OmZl2kMaaR/vWKoCxdN7/EAoC2CZ4iPZSR/e/VPPJIPu59roEEnSGCRy/HKFdBHnmBeyBnMm9OXEjkFgPDbzXqZxSJ2YVnfFzXEaTfi0+ipk4CceyvNwS6t5AcjlW81Eg1wRYksiEpnaoorMtjqeP1tMuUdDjyroCEdMZOGudSuhC0gzW7LOx7dTAnK8Xb6Zr7g8JhiQsiYhY7o3rFR8Yj8Y4XDoxEN5JiGmHYCrLiXXp/LezYWNGQr/bhie3f9BqpcYjCr5uyh1fF+OTEC6bete27FnNRv+INV456st8NZHgrr5bfjoOhbpMgEtnqR8Bh1V2vmM/4mJCxJMVHVUN3xOp8PgKGcMV4vyRU7cx8kIMXqaFju/wyzeVpbhfrs/0KNFctCPCRBoK+TJJURuM3mZ4PuVVg05HwmHpcO+CY5PD9QMVTcWrvJpPqb+D1K3NqNz40ZEXiI6gd8Z39Ye8r3uV2nRaTwWJbmKH2msS1umjIrdRIoAfhyU6SXPFCUlP0BxU1de3pKWlRxokuVy2k6hF7dWVo="
 
       
-script:
-- mvn clean package sonar:sonar -Dsonar.projectKey=ShockGiammy_bookkeeper -Dsonar.login=56bd83dd305f8fb5c018fed882fb8dc8225ba226
+script: mvn clean package
 
-#org.jacoco:jacoco-maven-plugin:prepare-agent
+#org.jacoco:jacoco-maven-plugin:prepare-agent sonar:sonar -Dsonar.projectKey=ShockGiammy_bookkeeper -Dsonar.login=56bd83dd305f8fb5c018fed882fb8dc8225ba226
