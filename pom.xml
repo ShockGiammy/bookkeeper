@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--Licensed to the Apache Software Foundation (ASF) under one or more
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
    this work for additional information regarding copyright ownership.
    The ASF licenses this file to You under the Apache License, Version 2.0
@@ -10,7 +10,9 @@
    distributed under the License is distributed on an "AS IS" BASIS,
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
-   limitations under the License.-->
+   limitations under the License.
+-->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <groupId>org.apache</groupId>
@@ -106,7 +108,7 @@
     <javac.target>1.8</javac.target>
     <redirectTestOutputToFile>true</redirectTestOutputToFile>
     <testRetryCount>2</testRetryCount>
-  
+
     <!-- dependencies -->
     <arquillian-cube.version>1.18.2</arquillian-cube.version>
     <arquillian-junit.version>1.6.0.Final</arquillian-junit.version>
@@ -145,7 +147,7 @@
     <lombok.version>1.18.20</lombok.version>
     <lz4.version>1.3.0</lz4.version>
     <mockito.version>3.0.0</mockito.version>
-    <netty.version>4.1.63.Final</netty.version>
+	<netty.version>4.1.63.Final</netty.version>
     <netty-boringssl.version>2.0.38.Final</netty-boringssl.version>
     <ostrich.version>9.1.3</ostrich.version>
     <powermock.version>2.0.2</powermock.version>
@@ -156,7 +158,7 @@
     <protoc3.version>3.14.0</protoc3.version>
     <protoc-gen-grpc-java.version>${grpc.version}</protoc-gen-grpc-java.version>
     <reflections.version>0.9.11</reflections.version>
-    <rocksdb.version>6.16.4</rocksdb.version>
+    <rocksdb.version>6.10.2</rocksdb.version>
     <shrinkwrap.version>3.0.1</shrinkwrap.version>
     <slf4j.version>1.7.25</slf4j.version>
     <snakeyaml.version>1.19</snakeyaml.version>
@@ -240,7 +242,7 @@
         <artifactId>freebuilder</artifactId>
         <version>${freebuilder.version}</version>
       </dependency>
-
+      
       <!-- logging dependencies -->
       <dependency>
         <groupId>org.slf4j</groupId>
@@ -369,13 +371,13 @@
         <artifactId>jackson-module-scala_2.11</artifactId>
         <version>${jackson.version}</version>
       </dependency>
-	  <!-- dependency needed for zookeeper jetty admin server -->
+      <!-- dependency needed for zookeeper jetty admin server -->
       <dependency>
         <groupId>org.codehaus.jackson</groupId>
         <artifactId>jackson-mapper-asl</artifactId>
         <version>${jackson-mapper-asl.version}</version>
       </dependency>
-	  
+
       <!-- protobuf dependencies -->
       <dependency>
         <groupId>com.google.protobuf</groupId>
@@ -551,13 +553,12 @@
           </exclusion>
         </exclusions>
       </dependency>
-      
       <dependency>
-    	<groupId>org.codehaus.groovy</groupId>
-    	<artifactId>groovy-all</artifactId>
-    	<version>3.0.8</version>
-    	<type>pom</type>
-	</dependency>
+       <groupId>org.codehaus.groovy</groupId>
+       <artifactId>groovy-all</artifactId>
+       <version>3.0.8</version>
+       <type>pom</type>
+      </dependency>  
 
       <!-- http server dependencies -->
       <dependency>
@@ -818,6 +819,11 @@
       <artifactId>powermock-module-junit4</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>27.1-jre</version>
+    </dependency>
   </dependencies>
 
   <build>
@@ -829,7 +835,22 @@
       </extension>
     </extensions>
     <pluginManagement>
-      <plugins>   
+      <plugins>
+      <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.8.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.sonarsource.scanner.maven</groupId>
+          <artifactId>sonar-maven-plugin</artifactId>
+          <version>3.7.0.1746</version>
+        </plugin>
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>0.8.6</version>
+        </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-checkstyle-plugin</artifactId>
@@ -1034,26 +1055,31 @@
           <consoleOutput>true</consoleOutput>
         </configuration>
       </plugin>
-      
-      <!-- Sonar plugin -->
-      <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.8.1</version>
-        </plugin>
-        <plugin>
-          <groupId>org.sonarsource.scanner.maven</groupId>
-          <artifactId>sonar-maven-plugin</artifactId>
-          <version>3.7.0.1746</version>
-        </plugin>
-        <plugin>
-          <groupId>org.jacoco</groupId>
-          <artifactId>jacoco-maven-plugin</artifactId>
-          <version>0.8.6</version>
-        </plugin>
     </plugins>
   </build>
   <profiles>
+  <profile>
+      <id>coverage</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>prepare-agent</id>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
     <profile>
       <!-- profile used by jenkins CI -->
       <id>code-coverage</id>
@@ -1078,6 +1104,18 @@
               <!-- we want build to complete even in case of failures -->
               <testFailureIgnore>true</testFailureIgnore>
             </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>0.8.0</version>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
+              </execution>
+            </executions>
           </plugin>
         </plugins>
       </build>
@@ -1157,28 +1195,6 @@
                   <!-- we have a dedicated distribution module in bookkeeper-dist -->
                   <skipAssembly>true</skipAssembly>
                 </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>coverage</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.jacoco</groupId>
-            <artifactId>jacoco-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>prepare-agent</id>
-                <goals>
-                  <goal>prepare-agent</goal>
-                </goals>
               </execution>
             </executions>
           </plugin>
