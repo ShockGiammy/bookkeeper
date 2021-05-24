@@ -847,9 +847,6 @@
 	      <executions>
         	<execution>
           	<phase>verify</phase>
-          	<goals>
-            	<goal>sonar</goal>
-          	</goals>
                </execution>
       	     </executions>
         </plugin>
