@@ -10,4 +10,4 @@ install: true
 
 script: mvn clean package #verify sonar:sonar #package
 
-#org.jacoco:jacoco-maven-plugin:prepare-agent sonar:sonar -Dsonar.projectKey=ShockGiammy_bookkeeper -Dsonar.login=56bd83dd305f8fb5c018fed882fb8dc8225ba226
+#org.jacoco:jacoco-maven-plugin:prepare-agent sonar:sonar -Dsonar.projectKey=ShockGiammy_bookkeeper -Dsonar.login=56bd83dd305f8fb5c018fed882fb8dc8225ba226  token export SONAR_TOKEN=ea321be3d5ee5a162fd7f89aeb5e9a7efd0522a7
