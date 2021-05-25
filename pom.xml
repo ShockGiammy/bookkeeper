@@ -69,6 +69,7 @@
     <module>shaded</module>
     <module>microbenchmarks</module>
     <module>tests</module>
+    <module>coverage</module>
   </modules>
   <mailingLists>
     <mailingList>
@@ -209,7 +210,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <maven.compiler.target>1.8</maven.compiler.target>
     <maven.compiler.source>1.8</maven.compiler.source>
-    <aggregate.report.dir>tests/target/site/jacoco-aggregate/jacoco.xml</aggregate.report.dir>
+    <aggregate.report.dir>coverage/target/site/jacoco-aggregate/jacoco.xml</aggregate.report.dir>
   </properties>
 
   <!-- dependency definitions -->
@@ -823,11 +824,6 @@
       <artifactId>powermock-module-junit4</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>27.1-jre</version>
-    </dependency>
   </dependencies>
 
   <build>
@@ -843,7 +839,7 @@
       <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.8.1</version>
+          <version>${maven-compiler-plugin.version}</version>
 	      <executions>
         	<execution>
           	<phase>verify</phase>
