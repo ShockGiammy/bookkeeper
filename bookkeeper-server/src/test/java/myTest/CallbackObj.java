@@ -1,4 +1,4 @@
-package org.apache.bookkeeper.test;
+package myTest;
 
 import java.util.concurrent.CountDownLatch;
 
