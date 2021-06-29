@@ -900,6 +900,7 @@ public class BookieClientTest {
         
     	synchronized (result) {
         	client.addEntry(addr, 1, passwd, 1, byteBuf, wrcb, result, BookieProtocol.FLAG_NONE, false, WriteFlag.NONE);
+        	assertEquals(0, client.getNumPendingRequests(addr, 1), 1);
             try {
 				result.wait(1000);
 			} catch (InterruptedException e) {
@@ -917,7 +918,6 @@ public class BookieClientTest {
             assertEquals(0, result.rc);
             assertEquals(1, result.entry.getInt());
         }
-    	assertEquals(0, client.getNumPendingRequests(addr, 1));
     	
     	client.close();
     	assertEquals(0, client.getNumPendingRequests(addr, 1));
