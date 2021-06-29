@@ -259,11 +259,10 @@ public class ByteBufAllocatorTest {
 
         buffer = allocator.buffer();
         assertFalse(buffer.hasArray());
-        assertEquals(8, ((PooledByteBufAllocator) buffer.alloc()).metric().numDirectArenas());
+        assertEquals(2 * Runtime.getRuntime().availableProcessors(), ((PooledByteBufAllocator) buffer.alloc()).metric().numDirectArenas());
         assertEquals(DEFAULT_MAX_CAPACITY, buffer.maxCapacity());
         buffer.release();
     }
-
     
     @Test
     public void testOutOfMemoryPolicyWithException() {
@@ -413,12 +412,10 @@ public class ByteBufAllocatorTest {
         assertEquals(noHeapException.getMessage(), receivedException.get().getMessage());
     }
 
-    @Test
+    @Test			//to upgrade branch coverage (line 183)
     public void testOutOfMemoryPolicyUnpooledDirect() {
     
-        ByteBufAllocator heapAlloc = mock(ByteBufAllocator.class);
-        OutOfMemoryError noMemError = new OutOfMemoryError("no more direct mem");
-        when(heapAlloc.directBuffer(anyInt(), anyInt())).thenThrow(noMemError);
+        when(heapAlloc.directBuffer(anyInt(), anyInt())).thenThrow(outOfMemException);
 
         allocator = ByteBufAllocatorBuilder.create()
                 .poolingPolicy(PoolingPolicy.UnpooledHeap)
@@ -434,9 +431,9 @@ public class ByteBufAllocatorTest {
             fail("Should have thrown exception");
         } catch (OutOfMemoryError e) {
             // Expected
-            assertEquals(noMemError, e);
+            assertEquals(outOfMemException, e);
         }
-        assertEquals(noMemError.getMessage(), receivedException.get().getMessage());
+        assertEquals(outOfMemException.getMessage(), receivedException.get().getMessage());
     }
 
     @Test
@@ -454,7 +451,7 @@ public class ByteBufAllocatorTest {
                 .build();
 
         try {
-        	allocator.heapBuffer();
+        	allocator.buffer();
             fail("Should have thrown exception");
         } catch (OutOfMemoryError e) {
             // Expected
@@ -466,7 +463,7 @@ public class ByteBufAllocatorTest {
     @Test
     public void testNoListener() {
     
-        when(heapAlloc.buffer(anyInt(), anyInt())).thenThrow(noHeapException);
+        when(heapAlloc.buffer(anyInt(), anyInt())).thenThrow(outOfMemException);
 
         allocator = ByteBufAllocatorBuilder.create()
                 .poolingPolicy(PoolingPolicy.PooledDirect)
