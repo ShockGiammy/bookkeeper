@@ -1,10 +1,9 @@
 package myTest;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -277,9 +276,7 @@ public class BookieClientTest {
     
     @Test
     public void testCorrectReadAndWrite() {
-    	
-        //final Object notifyObject = new Object();
-        
+    
         synchronized (result) {
         	client.addEntry(addr, 1, passwd, 1, byteBuf, wrcb, result, BookieProtocol.FLAG_NONE, false, WriteFlag.NONE);
             try {
@@ -558,6 +555,34 @@ public class BookieClientTest {
     public void testNullBuffer() {
     	
     	client.addEntry(addr, 1, passwd, 1, null, wrcb, result, BookieProtocol.FLAG_NONE, false, WriteFlag.NONE);
+    }
+    
+    @Test
+    public void testHelloValue() {
+    	
+    	byte[] hello = "hello".getBytes(UTF_8);
+        byteBuf = ByteBufList.get(Unpooled.wrappedBuffer(hello));
+        
+        synchronized (result) {
+        	client.addEntry(addr, 1, passwd, 1, byteBuf, wrcb, result, BookieProtocol.FLAG_NONE, false, WriteFlag.NONE);
+            try {
+				result.wait(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+            assertEquals(BKException.Code.WriteException, result.rc);
+        }
+        /*}
+        synchronized (result) {
+            client.readEntry(addr, 1, 1, recb, result, BookieProtocol.FLAG_NONE);
+            try {
+				result.wait(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+            assertEquals(0, result.rc);
+            assertEquals(1, result.entry.getInt());
+        }*/
     }
     
     @Test
@@ -854,7 +879,7 @@ public class BookieClientTest {
 
     	assertEquals(0, client.getNumPendingRequests(addr, 1));
 
-    	ByteBufList byteBuf = createByteBuffer(1, 1, 1);
+    	//ByteBufList byteBuf = createByteBuffer(1, 1, 1);
         
     	synchronized (result) {
         	client.addEntry(addr, 1, passwd, 1, byteBuf, wrcb, result, BookieProtocol.FLAG_NONE, false, WriteFlag.NONE);
