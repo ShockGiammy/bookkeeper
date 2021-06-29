@@ -572,17 +572,6 @@ public class BookieClientTest {
 			}
             assertEquals(BKException.Code.WriteException, result.rc);
         }
-        /*}
-        synchronized (result) {
-            client.readEntry(addr, 1, 1, recb, result, BookieProtocol.FLAG_NONE);
-            try {
-				result.wait(1000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-            assertEquals(0, result.rc);
-            assertEquals(1, result.entry.getInt());
-        }*/
     }
     
     @Test
@@ -688,14 +677,42 @@ public class BookieClientTest {
     	
     
     	byteBuf = createByteBuffer(2, 1, 2);
-    	client.addEntry(addr, 1, passwd, 2, byteBuf, wrcb, null, BookieProtocol.FLAG_NONE, false, WriteFlag.NONE);
+    	synchronized (result) {
+    		client.addEntry(addr, 1, passwd, 2, byteBuf, wrcb, null, BookieProtocol.FLAG_NONE, false, WriteFlag.NONE);
+    		 try {
+ 				result.wait(1000);
+ 			} catch (InterruptedException e) {
+ 				e.printStackTrace();
+ 			}
+    	}
     	byteBuf = createByteBuffer(3, 1, 3);
-    	client.addEntry(addr, 1, passwd, 3, byteBuf, wrcb, null, BookieProtocol.FLAG_NONE, false, WriteFlag.NONE);
+    	synchronized (result) {
+    		client.addEntry(addr, 1, passwd, 3, byteBuf, wrcb, null, BookieProtocol.FLAG_NONE, false, WriteFlag.NONE); 
+    		try {
+				result.wait(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+    	}
     	byteBuf = createByteBuffer(5, 1, 5);
-    	client.addEntry(addr, 1, passwd, 5, byteBuf, wrcb, null, BookieProtocol.FLAG_NONE, false, WriteFlag.NONE);
+    	synchronized (result) {
+    		client.addEntry(addr, 1, passwd, 5, byteBuf, wrcb, null, BookieProtocol.FLAG_NONE, false, WriteFlag.NONE);
+    		try {
+				result.wait(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+    	}
     	byteBuf = createByteBuffer(7, 1, 7);
-    	client.addEntry(addr, 1, passwd, 7, byteBuf, wrcb, null, BookieProtocol.FLAG_NONE, false, WriteFlag.NONE);
-    	
+    	synchronized (result) {
+    		client.addEntry(addr, 1, passwd, 7, byteBuf, wrcb, null, BookieProtocol.FLAG_NONE, false, WriteFlag.NONE);
+    		 try {
+  				result.wait(1000);
+  			} catch (InterruptedException e) {
+  				e.printStackTrace();
+  			}
+    	}
+    		 
     	synchronized (result) {
     		client.readEntry(addr, 1, 7, recb, result, BookieProtocol.FLAG_NONE);
     		try {
