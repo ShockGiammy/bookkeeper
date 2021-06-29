@@ -896,8 +896,6 @@ public class BookieClientTest {
 
     	assertEquals(0, client.getNumPendingRequests(addr, 1));
 
-    	//ByteBufList byteBuf = createByteBuffer(1, 1, 1);
-        
     	synchronized (result) {
         	client.addEntry(addr, 1, passwd, 1, byteBuf, wrcb, result, BookieProtocol.FLAG_NONE, false, WriteFlag.NONE);
         	assertEquals(0, client.getNumPendingRequests(addr, 1), 1);
