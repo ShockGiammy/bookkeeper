@@ -824,6 +824,12 @@
       <artifactId>powermock-module-junit4</artifactId>
       <scope>test</scope>
     </dependency>
+    <!-- <dependency>
+      <groupId>org.pitest</groupId>
+      <artifactId>pitest-maven</artifactId>
+      <version>1.6.7</version>
+      <type>maven-plugin</type>
+ 	</dependency> -->
   </dependencies>
 
   <build>

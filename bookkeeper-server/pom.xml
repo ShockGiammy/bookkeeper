@@ -265,6 +265,26 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+      </plugin>
+      <plugin>
+    	<groupId>org.pitest</groupId>
+    	<artifactId>pitest-maven</artifactId>
+    	<version>1.6.7</version>
+    	<configuration>
+          <targetClasses>
+            <param>org.apache.bookkeeper.proto.BookieClientImpl*</param>
+          </targetClasses>
+          <TestClasses >
+            <param>myTest.BookieClientTest</param>
+          </TestClasses>
+          <environmentVariables>
+            <environment>test</environment>
+          </environmentVariables>
+    	</configuration>
+ 	  </plugin>
     </plugins>
   </build>
   <profiles>
