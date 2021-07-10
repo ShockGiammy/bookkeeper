@@ -3,6 +3,7 @@ package myTest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -31,23 +32,28 @@ public class ByteBufAllocatorTest {
     ByteBufAllocator allocator2;
     ByteBuf buffer;
     ByteBuf buffer2;
-    private static final int DEFAULT_INITIAL_CAPACITY = 256;
-    private static final int DEFAULT_MAX_CAPACITY = Integer.MAX_VALUE;
     ByteBufAllocator mockAllocator;
-    OutOfMemoryError outOfMemException;
+    OutOfMemoryError outOfMemError;
     ByteBufAllocator heapAlloc;
-    OutOfMemoryError noHeapException;
-    AtomicReference<OutOfMemoryError> receivedException;
+    OutOfMemoryError noHeapError;
+    AtomicReference<OutOfMemoryError> receivedError;
+    int initialCapacity;
+    int defaultmaxCapacity;
+    int wrongInitialCapacity;
     
     @Before
     public void configure() {
     	mockAllocator = mock(ByteBufAllocator.class);
-    	outOfMemException = new OutOfMemoryError("no mem");
+    	outOfMemError = new OutOfMemoryError("no mem");
     	
         heapAlloc = mock(ByteBufAllocator.class);
-        noHeapException = new OutOfMemoryError("no more heap");
+        noHeapError = new OutOfMemoryError("no more heap");
         
-        receivedException = new AtomicReference<>();
+        receivedError = new AtomicReference<>();
+        
+        initialCapacity = 256;
+        defaultmaxCapacity = Integer.MAX_VALUE;
+        wrongInitialCapacity = -256;
     }
 
     @Test
@@ -57,7 +63,7 @@ public class ByteBufAllocatorTest {
     	assertTrue(allocator.isDirectBufferPooled());
     	
     	buffer = allocator.buffer();
-    	assertEquals(DEFAULT_MAX_CAPACITY, buffer.maxCapacity());
+    	assertEquals(defaultmaxCapacity, buffer.maxCapacity());
     	buffer.release();
     }
     
@@ -74,7 +80,7 @@ public class ByteBufAllocatorTest {
         assertTrue(buffer.hasArray());
         
         assertFalse(allocator.isDirectBufferPooled());
-        assertEquals(DEFAULT_MAX_CAPACITY, buffer.maxCapacity());
+        assertEquals(defaultmaxCapacity, buffer.maxCapacity());
         buffer.release();
     }
     
@@ -83,12 +89,12 @@ public class ByteBufAllocatorTest {
     	
         allocator = ByteBufAllocatorBuilder.create()
                 .poolingPolicy(PoolingPolicy.UnpooledHeap)		//same as null
-                .unpooledAllocator(null)				//same as "UnpooledByteBufAllocator.DEFAULT"
+                .unpooledAllocator(null)						//same as "UnpooledByteBufAllocator.DEFAULT"
                 .build();
 
         buffer = allocator.buffer();
         assertEquals(UnpooledByteBufAllocator.DEFAULT, buffer.alloc());
-        assertEquals(DEFAULT_MAX_CAPACITY, buffer.maxCapacity());
+        assertEquals(defaultmaxCapacity, buffer.maxCapacity());
         buffer.release();
     }
 
@@ -96,13 +102,13 @@ public class ByteBufAllocatorTest {
     public void testNullEqualsDefault() {
     	
     	allocator = ByteBufAllocatorBuilder.create()
-                .poolingPolicy(PoolingPolicy.UnpooledHeap)		//same as null
-                .unpooledAllocator(UnpooledByteBufAllocator.DEFAULT)				//same as "UnpooledByteBufAllocator.DEFAULT"
+                .poolingPolicy(PoolingPolicy.UnpooledHeap)
+                .unpooledAllocator(UnpooledByteBufAllocator.DEFAULT)
                 .build();
     	
     	allocator2 = ByteBufAllocatorBuilder.create()
-                .poolingPolicy(null)		//same as null
-                .unpooledAllocator(null)				//same as "UnpooledByteBufAllocator.DEFAULT"
+                .poolingPolicy(null)
+                .unpooledAllocator(null)
                 .build();
     	
     	buffer = allocator.buffer();
@@ -127,7 +133,7 @@ public class ByteBufAllocatorTest {
         buffer = allocator.buffer();
         assertEquals(PooledByteBufAllocator.DEFAULT, buffer.alloc());
         assertFalse(buffer.hasArray());
-        assertEquals(DEFAULT_MAX_CAPACITY, buffer.maxCapacity());
+        assertEquals(defaultmaxCapacity, buffer.maxCapacity());
         buffer.release();
     }
     
@@ -148,7 +154,7 @@ public class ByteBufAllocatorTest {
         assertNotEquals(PooledByteBufAllocator.DEFAULT, buffer.alloc());
         assertEquals(UnpooledByteBufAllocator.DEFAULT, buffer.alloc());
         assertTrue(buffer.hasArray());
-        assertEquals(DEFAULT_MAX_CAPACITY, buffer.maxCapacity());
+        assertEquals(defaultmaxCapacity, buffer.maxCapacity());
         buffer.release();
     }
 
@@ -167,7 +173,7 @@ public class ByteBufAllocatorTest {
         buffer = allocator.buffer();
         assertFalse(buffer.hasArray());
         assertEquals(-1, ((PooledByteBufAllocator) buffer.alloc()).metric().numDirectArenas());
-        assertEquals(DEFAULT_MAX_CAPACITY, buffer.maxCapacity());
+        assertEquals(defaultmaxCapacity, buffer.maxCapacity());
         buffer.release();
     }
     
@@ -186,7 +192,7 @@ public class ByteBufAllocatorTest {
         assertFalse(buffer.hasArray());
         System.out.println(((PooledByteBufAllocator) buffer.alloc()).metric().numDirectArenas());
         assertEquals(0, ((PooledByteBufAllocator) buffer.alloc()).metric().numDirectArenas());
-        assertEquals(DEFAULT_MAX_CAPACITY, buffer.maxCapacity());
+        assertEquals(defaultmaxCapacity, buffer.maxCapacity());
         buffer.release();
     }
     
@@ -204,7 +210,7 @@ public class ByteBufAllocatorTest {
         buffer = allocator.buffer();
         assertFalse(buffer.hasArray());
         assertEquals(1, ((PooledByteBufAllocator) buffer.alloc()).metric().numDirectArenas());
-        assertEquals(DEFAULT_MAX_CAPACITY, buffer.maxCapacity());
+        assertEquals(defaultmaxCapacity, buffer.maxCapacity());
         buffer.release();
     }
     
@@ -222,7 +228,7 @@ public class ByteBufAllocatorTest {
         buffer = allocator.buffer();
         assertFalse(buffer.hasArray());
         assertEquals(3, ((PooledByteBufAllocator) buffer.alloc()).metric().numDirectArenas());
-        assertEquals(DEFAULT_MAX_CAPACITY, buffer.maxCapacity());
+        assertEquals(defaultmaxCapacity, buffer.maxCapacity());
         buffer.release();
     }
 
@@ -240,11 +246,10 @@ public class ByteBufAllocatorTest {
         buffer = allocator.buffer();
         assertFalse(buffer.hasArray());
         assertEquals(30, ((PooledByteBufAllocator) buffer.alloc()).metric().numDirectArenas());
-        assertEquals(DEFAULT_MAX_CAPACITY, buffer.maxCapacity());
+        assertEquals(defaultmaxCapacity, buffer.maxCapacity());
         buffer.release();
     }
     
-    // viewing implementation
     @Test
     public void testPooledDefaultAllocatorWithConcurrency() {
     	
@@ -260,20 +265,21 @@ public class ByteBufAllocatorTest {
         buffer = allocator.buffer();
         assertFalse(buffer.hasArray());
         assertEquals(2 * Runtime.getRuntime().availableProcessors(), ((PooledByteBufAllocator) buffer.alloc()).metric().numDirectArenas());
-        assertEquals(DEFAULT_MAX_CAPACITY, buffer.maxCapacity());
+        assertEquals(defaultmaxCapacity, buffer.maxCapacity());
         buffer.release();
     }
     
     @Test
     public void testOutOfMemoryPolicyWithException() {
         
-        when(mockAllocator.directBuffer(anyInt(), anyInt())).thenThrow(outOfMemException);
+        when(mockAllocator.directBuffer(anyInt(), anyInt())).thenThrow(outOfMemError);
 
         ByteBufAllocator alloc = ByteBufAllocatorBuilder.create()
                 .pooledAllocator(mockAllocator)
+                .poolingPolicy(PoolingPolicy.PooledDirect)
                 .outOfMemoryPolicy(OutOfMemoryPolicy.ThrowException)
                 .outOfMemoryListener((e) -> {
-                    receivedException.set(e);
+                    receivedError.set(e);
                 })
                 .build();
         assertEquals(LeakDetectionPolicy.Disabled.toString().toUpperCase(), ResourceLeakDetector.getLevel().toString());
@@ -282,23 +288,23 @@ public class ByteBufAllocatorTest {
             alloc.buffer();
             fail("Should have thrown exception");
         } catch (OutOfMemoryError e) {
-            // Expected
-            assertEquals(outOfMemException, e);
+            assertEquals(outOfMemError, e);
         }
-        assertEquals(outOfMemException.getMessage(), receivedException.get().getMessage());
+        assertEquals(outOfMemError.getMessage(), receivedError.get().getMessage());
     }
     
     @Test
     public void testOutOfMemoryPolicyWithExceptionSimple() {
         
-        when(mockAllocator.directBuffer(anyInt(), anyInt())).thenThrow(outOfMemException);
+        when(mockAllocator.directBuffer(anyInt(), anyInt())).thenThrow(outOfMemError);
 
         ByteBufAllocator alloc = ByteBufAllocatorBuilder.create()
                 .pooledAllocator(mockAllocator)
+                .poolingPolicy(PoolingPolicy.PooledDirect)
                 .outOfMemoryPolicy(OutOfMemoryPolicy.ThrowException)
                 .leakDetectionPolicy(LeakDetectionPolicy.Simple)
                 .outOfMemoryListener((e) -> {
-                    receivedException.set(e);
+                    receivedError.set(e);
                 })
                 .build();
         assertEquals(LeakDetectionPolicy.Simple.toString().toUpperCase(), ResourceLeakDetector.getLevel().toString());
@@ -307,23 +313,23 @@ public class ByteBufAllocatorTest {
             alloc.buffer();
             fail("Should have thrown exception");
         } catch (OutOfMemoryError e) {
-            // Expected
-            assertEquals(outOfMemException, e);
+            assertEquals(outOfMemError, e);
         }
-        assertEquals(outOfMemException.getMessage(), receivedException.get().getMessage());
+        assertEquals(outOfMemError.getMessage(), receivedError.get().getMessage());
     }
     
     @Test
     public void testOutOfMemoryPolicyWithExceptionAvanced() {
         
-        when(mockAllocator.directBuffer(anyInt(), anyInt())).thenThrow(outOfMemException);
+        when(mockAllocator.directBuffer(anyInt(), anyInt())).thenThrow(outOfMemError);
 
         ByteBufAllocator alloc = ByteBufAllocatorBuilder.create()
                 .pooledAllocator(mockAllocator)
+                .poolingPolicy(PoolingPolicy.PooledDirect)
                 .outOfMemoryPolicy(OutOfMemoryPolicy.ThrowException)
                 .leakDetectionPolicy(LeakDetectionPolicy.Advanced)
                 .outOfMemoryListener((e) -> {
-                    receivedException.set(e);
+                    receivedError.set(e);
                 })
                 .build();
         assertEquals(LeakDetectionPolicy.Advanced.toString().toUpperCase(), ResourceLeakDetector.getLevel().toString());
@@ -332,23 +338,23 @@ public class ByteBufAllocatorTest {
             alloc.buffer();
             fail("Should have thrown exception");
         } catch (OutOfMemoryError e) {
-            // Expected
-            assertEquals(outOfMemException, e);
+            assertEquals(outOfMemError, e);
         }
-        assertEquals(outOfMemException.getMessage(), receivedException.get().getMessage());
+        assertEquals(outOfMemError.getMessage(), receivedError.get().getMessage());
     }
     
     @Test
     public void testOutOfMemoryPolicyWithExceptionParanoid() {
         
-        when(mockAllocator.directBuffer(anyInt(), anyInt())).thenThrow(outOfMemException);
+        when(mockAllocator.directBuffer(anyInt(), anyInt())).thenThrow(outOfMemError);
 
         ByteBufAllocator alloc = ByteBufAllocatorBuilder.create()
                 .pooledAllocator(mockAllocator)
+                .poolingPolicy(PoolingPolicy.PooledDirect)
                 .outOfMemoryPolicy(OutOfMemoryPolicy.ThrowException)
                 .leakDetectionPolicy(LeakDetectionPolicy.Paranoid)
                 .outOfMemoryListener((e) -> {
-                    receivedException.set(e);
+                    receivedError.set(e);
                 })
                 .build();
         assertEquals(LeakDetectionPolicy.Paranoid.toString().toUpperCase(), ResourceLeakDetector.getLevel().toString());
@@ -357,23 +363,23 @@ public class ByteBufAllocatorTest {
             alloc.buffer();
             fail("Should have thrown exception");
         } catch (OutOfMemoryError e) {
-            // Expected
-            assertEquals(outOfMemException, e);
+            assertEquals(outOfMemError, e);
         }
-        assertEquals(outOfMemException.getMessage(), receivedException.get().getMessage());
+        assertEquals(outOfMemError.getMessage(), receivedError.get().getMessage());
     }
 
     @Test
     public void testOutOfMemoryPolicyWithFallback() {
     
-        when(mockAllocator.directBuffer(anyInt(), anyInt())).thenThrow(outOfMemException);
+        when(mockAllocator.directBuffer(anyInt(), anyInt())).thenThrow(outOfMemError);
 
         allocator = ByteBufAllocatorBuilder.create()
                 .pooledAllocator(mockAllocator)
+                .poolingPolicy(PoolingPolicy.PooledDirect)
                 .unpooledAllocator(UnpooledByteBufAllocator.DEFAULT)
                 .outOfMemoryPolicy(OutOfMemoryPolicy.FallbackToHeap)
                 .outOfMemoryListener((e) -> {
-                    receivedException.set(e);
+                    receivedError.set(e);
                 })
                 .build();
 
@@ -382,7 +388,7 @@ public class ByteBufAllocatorTest {
         assertEquals(UnpooledByteBufAllocator.DEFAULT, buffer.alloc());
 
         // No notification should have been triggered
-        assertEquals(null, receivedException.get());
+        assertEquals(null, receivedError.get());
     }
     
     //fino qui
@@ -390,15 +396,16 @@ public class ByteBufAllocatorTest {
     @Test
     public void testOutOfMemoryPolicyWithFallbackAndNoMoreHeap() {
 
-        when(mockAllocator.directBuffer(anyInt(), anyInt())).thenThrow(outOfMemException);
-        when(heapAlloc.heapBuffer(anyInt(), anyInt())).thenThrow(noHeapException);
+        when(mockAllocator.directBuffer(anyInt(), anyInt())).thenThrow(outOfMemError);
+        when(heapAlloc.heapBuffer(anyInt(), anyInt())).thenThrow(noHeapError);
 
         allocator = ByteBufAllocatorBuilder.create()
                 .pooledAllocator(mockAllocator)
                 .unpooledAllocator(heapAlloc)
+                .poolingPolicy(PoolingPolicy.PooledDirect)
                 .outOfMemoryPolicy(OutOfMemoryPolicy.FallbackToHeap)
                 .outOfMemoryListener((e) -> {
-                    receivedException.set(e);
+                    receivedError.set(e);
                 })
                 .build();
 
@@ -406,47 +413,22 @@ public class ByteBufAllocatorTest {
         	allocator.buffer();
             fail("Should have thrown exception");
         } catch (OutOfMemoryError e) {
-            // Expected
-            assertEquals(noHeapException, e);
+            assertEquals(noHeapError, e);
         }
-        assertEquals(noHeapException.getMessage(), receivedException.get().getMessage());
-    }
-
-    @Test			//to upgrade branch coverage (line 183)
-    public void testOutOfMemoryPolicyUnpooledDirect() {
-    
-        when(heapAlloc.directBuffer(anyInt(), anyInt())).thenThrow(outOfMemException);
-
-        allocator = ByteBufAllocatorBuilder.create()
-                .poolingPolicy(PoolingPolicy.UnpooledHeap)
-                .unpooledAllocator(heapAlloc)
-                .outOfMemoryPolicy(OutOfMemoryPolicy.FallbackToHeap)
-                .outOfMemoryListener((e) -> {
-                    receivedException.set(e);
-                })
-                .build();
-
-        try {
-        	allocator.directBuffer();
-            fail("Should have thrown exception");
-        } catch (OutOfMemoryError e) {
-            // Expected
-            assertEquals(outOfMemException, e);
-        }
-        assertEquals(outOfMemException.getMessage(), receivedException.get().getMessage());
+        assertEquals(noHeapError.getMessage(), receivedError.get().getMessage());
     }
 
     @Test
     public void testOutOfMemoryPolicyUnpooledWithHeap() {
     
-        when(heapAlloc.heapBuffer(anyInt(), anyInt())).thenThrow(noHeapException);
+        when(heapAlloc.heapBuffer(anyInt(), anyInt())).thenThrow(noHeapError);
 
         allocator = ByteBufAllocatorBuilder.create()
                 .poolingPolicy(PoolingPolicy.UnpooledHeap)
                 .unpooledAllocator(heapAlloc)
                 .outOfMemoryPolicy(OutOfMemoryPolicy.FallbackToHeap)
                 .outOfMemoryListener((e) -> {
-                    receivedException.set(e);
+                    receivedError.set(e);
                 })
                 .build();
 
@@ -454,16 +436,15 @@ public class ByteBufAllocatorTest {
         	allocator.buffer();
             fail("Should have thrown exception");
         } catch (OutOfMemoryError e) {
-            // Expected
-            assertEquals(noHeapException, e);
+            assertEquals(noHeapError, e);
         }
-        assertEquals(noHeapException.getMessage(), receivedException.get().getMessage());
+        assertEquals(noHeapError.getMessage(), receivedError.get().getMessage());
     }
     
     @Test
     public void testNoListener() {
     
-        when(heapAlloc.buffer(anyInt(), anyInt())).thenThrow(outOfMemException);
+        when(heapAlloc.buffer(anyInt(), anyInt())).thenThrow(outOfMemError);
 
         allocator = ByteBufAllocatorBuilder.create()
                 .poolingPolicy(PoolingPolicy.PooledDirect)
@@ -474,7 +455,7 @@ public class ByteBufAllocatorTest {
 
         allocator.buffer();
         
-        assertNull(receivedException.get());
+        assertNull(receivedError.get());
     }
     
     //test for buffer
@@ -486,25 +467,38 @@ public class ByteBufAllocatorTest {
             .unpooledAllocator(null)
             .build();
     	
-    	buffer = allocator.buffer(DEFAULT_INITIAL_CAPACITY, DEFAULT_MAX_CAPACITY);
-    	assertEquals(DEFAULT_MAX_CAPACITY, buffer.maxCapacity());
+    	buffer = allocator.buffer(initialCapacity, defaultmaxCapacity);
+    	assertEquals(defaultmaxCapacity, buffer.maxCapacity());
         buffer.release();
     }
     
     @Test
-    public void testBufferSmallerValues() {
+    public void testBufferInital0() {
     	allocator = ByteBufAllocatorBuilder.create()
             .poolingPolicy(PoolingPolicy.PooledDirect)
             .pooledAllocator(PooledByteBufAllocator.DEFAULT)
             .unpooledAllocator(null)
             .build();
     	
-    	buffer = allocator.buffer(50, 100);
-    	assertEquals(100, buffer.maxCapacity());
+    	buffer = allocator.buffer(0, defaultmaxCapacity);
+    	assertNotNull(buffer.maxCapacity());
         buffer.release();
     }
     
     @Test
+    public void testBufferSameValues() {
+    	allocator = ByteBufAllocatorBuilder.create()
+            .poolingPolicy(PoolingPolicy.PooledDirect)
+            .pooledAllocator(PooledByteBufAllocator.DEFAULT)
+            .unpooledAllocator(null)
+            .build();
+    	
+    	buffer = allocator.buffer(initialCapacity, initialCapacity);
+    	assertEquals(initialCapacity, buffer.maxCapacity());
+        buffer.release();
+    }
+    
+    @Test(expected=OutOfMemoryError.class)
     public void testBufferWrongValues() {
     	allocator = ByteBufAllocatorBuilder.create()
             .poolingPolicy(PoolingPolicy.PooledDirect)
@@ -512,8 +506,8 @@ public class ByteBufAllocatorTest {
             .unpooledAllocator(null)
             .build();
     	
-    	buffer = allocator.buffer(100, 100);
-    	assertEquals(100, buffer.maxCapacity());
+    	buffer = allocator.buffer(defaultmaxCapacity, defaultmaxCapacity);
+    	assertEquals(defaultmaxCapacity, buffer.maxCapacity());
         buffer.release();
     }
     
@@ -525,7 +519,7 @@ public class ByteBufAllocatorTest {
             .unpooledAllocator(null)
             .build();
     	
-    	buffer = allocator.buffer(100, 50);
+    	buffer = allocator.buffer(defaultmaxCapacity, initialCapacity);
     }
     
     @Test(expected=IllegalArgumentException.class)
@@ -536,28 +530,29 @@ public class ByteBufAllocatorTest {
             .unpooledAllocator(null)
             .build();
     	
-    	buffer = allocator.buffer(-100, 50);
+    	buffer = allocator.buffer(wrongInitialCapacity, defaultmaxCapacity);
     }
     
-    @Test(expected=IllegalArgumentException.class)
-    public void testBufferWrongValues4() {
-    	allocator = ByteBufAllocatorBuilder.create()
-            .poolingPolicy(PoolingPolicy.PooledDirect)
-            .pooledAllocator(PooledByteBufAllocator.DEFAULT)
-            .unpooledAllocator(null)
-            .build();
-    	
-    	buffer = allocator.buffer(-50, -100);
-    }
+    @Test			//to upgrade branch coverage (line 183)
+    public void testOutOfMemoryPolicyUnpooledDirect() {
     
-    @Test(expected=OutOfMemoryError.class)
-    public void testBufferWrongValues5() {
-    	allocator = ByteBufAllocatorBuilder.create()
-            .poolingPolicy(PoolingPolicy.PooledDirect)
-            .pooledAllocator(PooledByteBufAllocator.DEFAULT)
-            .unpooledAllocator(null)
-            .build();
-    	
-    	buffer = allocator.buffer(DEFAULT_MAX_CAPACITY, DEFAULT_MAX_CAPACITY);
+        when(heapAlloc.directBuffer(anyInt(), anyInt())).thenThrow(outOfMemError);
+
+        allocator = ByteBufAllocatorBuilder.create()
+                .poolingPolicy(PoolingPolicy.UnpooledHeap)
+                .unpooledAllocator(heapAlloc)
+                .outOfMemoryPolicy(OutOfMemoryPolicy.FallbackToHeap)
+                .outOfMemoryListener((e) -> {
+                    receivedError.set(e);
+                })
+                .build();
+
+        try {
+        	allocator.directBuffer();
+            fail("Should have thrown exception");
+        } catch (OutOfMemoryError e) {
+            assertEquals(outOfMemError, e);
+        }
+        assertEquals(outOfMemError.getMessage(), receivedError.get().getMessage());
     }
 }
