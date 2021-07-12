@@ -1,4 +1,4 @@
-package myTest;
+package it.uniroma2.dicii.isw2.bookkeeper.myTest;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
@@ -47,7 +47,6 @@ import org.apache.bookkeeper.util.IOUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
 
 public class BookieClientTest {
 	
@@ -252,7 +251,7 @@ public class BookieClientTest {
             assertEquals(init_rc, result.rc);			//result not written
         }
     }
-    
+
     @Test
     public void testZeroEntryReadAndWrite() {
         

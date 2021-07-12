@@ -75,7 +75,11 @@
             <param>org.apache.bookkeeper.common.allocator.impl.ByteBufAllocatorImpl</param>
           </targetClasses>
           <targetTests>
-            <param>myTest.ByteBufAllocatorTest</param>
+            <param>it.uniroma2.dicii.isw2.bookkeeper.myTest.ByteBufAllocatorTest</param>
+            <param>it.uniroma2.dicii.isw2.bookkeeper.myTest.BufferTest</param>
+            <param>it.uniroma2.dicii.isw2.bookkeeper.myTest.BufferExceptionsTest</param>
+            <param>it.uniroma2.dicii.isw2.bookkeeper.myTest.ByteBufAllocatorAddedTest</param>
+            <param>it.uniroma2.dicii.isw2.bookkeeper.myTest.ByteBufAllocatorMockitoTest</param>
           </targetTests>
     	</configuration>
  	  </plugin>
