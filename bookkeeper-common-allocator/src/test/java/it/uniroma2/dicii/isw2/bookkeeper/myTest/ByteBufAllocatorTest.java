@@ -12,7 +12,6 @@ import io.netty.util.ResourceLeakDetector;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import org.apache.bookkeeper.common.allocator.ByteBufAllocatorBuilder;
@@ -36,9 +35,6 @@ public class ByteBufAllocatorTest {
     LeakDetectionPolicy leakDetectionPolicy;
     int initialCapacity;
     int maxCapacity;
-    OutOfMemoryError outOfMemError;
-    OutOfMemoryError noHeapError;
-    AtomicReference<OutOfMemoryError> receivedError;
     
     ByteBufAllocator allocator;
     ByteBuf buffer;
@@ -46,34 +42,32 @@ public class ByteBufAllocatorTest {
     @Parameters
 	public static Collection<Object[]> getTestParameters() {
 		return Arrays.asList(new Object[][] {
-			{null, null, null, 8, null, null, LeakDetectionPolicy.Disabled, 256, Integer.MAX_VALUE, null, null},
-			{null, UnpooledByteBufAllocator.DEFAULT, PoolingPolicy.UnpooledHeap, 8, null, null, LeakDetectionPolicy.Disabled, 256, Integer.MAX_VALUE, null, null},
-			{null, null, PoolingPolicy.UnpooledHeap, 8, null, null, LeakDetectionPolicy.Disabled, 256, Integer.MAX_VALUE, null, null},
-			{null, UnpooledByteBufAllocator.DEFAULT, PoolingPolicy.UnpooledHeap, 8, null, null, LeakDetectionPolicy.Disabled, 256, Integer.MAX_VALUE, null, null},
-			{PooledByteBufAllocator.DEFAULT, null, PoolingPolicy.PooledDirect, 8, null, null, LeakDetectionPolicy.Disabled, 256, Integer.MAX_VALUE, null, null},
-			{null, null, PoolingPolicy.UnpooledHeap, 8, null, null, LeakDetectionPolicy.Disabled, 256, Integer.MAX_VALUE, null, null},
-			{PooledByteBufAllocator.DEFAULT, UnpooledByteBufAllocator.DEFAULT, null, 8, null, null, LeakDetectionPolicy.Disabled, 256, Integer.MAX_VALUE, null, null},
-			//{null, null, PoolingPolicy.PooledDirect, -1, null, null, LeakDetectionPolicy.Disabled, 256, Integer.MAX_VALUE, null, null},
-			//{null, null, PoolingPolicy.PooledDirect, 0, null, null, null, 256, Integer.MAX_VALUE, null, null},
-			{null, null, PoolingPolicy.PooledDirect, 0, null, null, LeakDetectionPolicy.Disabled, 256, Integer.MAX_VALUE, null, null},
-			{null, null, PoolingPolicy.PooledDirect, 1, null, null, LeakDetectionPolicy.Disabled, 256, Integer.MAX_VALUE, null, null},
-			{null, null, PoolingPolicy.PooledDirect, 3, null, null, LeakDetectionPolicy.Disabled, 256, Integer.MAX_VALUE, null, null},
-			{null, null, PoolingPolicy.PooledDirect, 30, null, null, LeakDetectionPolicy.Disabled, 256, Integer.MAX_VALUE, null, null},
+			{null, null, null, 8, null, null, LeakDetectionPolicy.Disabled, 256, Integer.MAX_VALUE},
+			{null, UnpooledByteBufAllocator.DEFAULT, PoolingPolicy.UnpooledHeap, 8, null, null, LeakDetectionPolicy.Disabled, 256, Integer.MAX_VALUE},
+			{null, null, PoolingPolicy.UnpooledHeap, 8, null, null, LeakDetectionPolicy.Disabled, 256, Integer.MAX_VALUE},
+			{null, UnpooledByteBufAllocator.DEFAULT, PoolingPolicy.UnpooledHeap, 8, null, null, LeakDetectionPolicy.Disabled, 256, Integer.MAX_VALUE},
+			{PooledByteBufAllocator.DEFAULT, null, PoolingPolicy.PooledDirect, 4, null, null, LeakDetectionPolicy.Disabled, 256, Integer.MAX_VALUE},
+			{null, null, PoolingPolicy.UnpooledHeap, 8, null, null, LeakDetectionPolicy.Disabled, 256, Integer.MAX_VALUE},
+			{PooledByteBufAllocator.DEFAULT, UnpooledByteBufAllocator.DEFAULT, null, 8, null, null, LeakDetectionPolicy.Disabled, 256, Integer.MAX_VALUE},
+			//{null, null, PoolingPolicy.PooledDirect, -1, null, null, LeakDetectionPolicy.Disabled, 256, Integer.MAX_VALUE},
+			//{null, null, PoolingPolicy.PooledDirect, 0, null, null, null, 256, Integer.MAX_VALUE},
+			{null, null, PoolingPolicy.PooledDirect, 0, null, null, LeakDetectionPolicy.Disabled, 256, Integer.MAX_VALUE},
+			{null, null, PoolingPolicy.PooledDirect, 1, null, null, LeakDetectionPolicy.Disabled, 256, Integer.MAX_VALUE},
+			{null, null, PoolingPolicy.PooledDirect, 3, null, null, LeakDetectionPolicy.Disabled, 256, Integer.MAX_VALUE},
+			{null, null, PoolingPolicy.PooledDirect, 30, null, null, LeakDetectionPolicy.Disabled, 256, Integer.MAX_VALUE}
 		});
 	}
     
 	public ByteBufAllocatorTest(ByteBufAllocator pooledAllocator, ByteBufAllocator unpooledAllocator, PoolingPolicy poolingPolicy,
 		    int poolingConcurrency, OutOfMemoryPolicy outOfMemoryPolicy, Consumer<OutOfMemoryError> outOfMemoryListener,
-		    LeakDetectionPolicy leakDetectionPolicy, int initialCapacity, int maxCapacity,
-		    OutOfMemoryError outOfMemError, OutOfMemoryError noHeapError) {
-		this.configure(pooledAllocator, unpooledAllocator, poolingPolicy, poolingConcurrency, outOfMemoryPolicy, outOfMemoryListener, leakDetectionPolicy, initialCapacity, maxCapacity, outOfMemError, noHeapError);
+		    LeakDetectionPolicy leakDetectionPolicy, int initialCapacity, int maxCapacity) {
+		this.configure(pooledAllocator, unpooledAllocator, poolingPolicy, poolingConcurrency, outOfMemoryPolicy, outOfMemoryListener, leakDetectionPolicy, initialCapacity, maxCapacity);
 	}
 	
 	
     public void configure(ByteBufAllocator pooledAllocator, ByteBufAllocator unpooledAllocator, PoolingPolicy poolingPolicy,
     int poolingConcurrency, OutOfMemoryPolicy outOfMemoryPolicy, Consumer<OutOfMemoryError> outOfMemoryListener,
-    LeakDetectionPolicy leakDetectionPolicy, int initialCapacity, int maxCapacity,
-    OutOfMemoryError outOfMemError, OutOfMemoryError noHeapError) {
+    LeakDetectionPolicy leakDetectionPolicy, int initialCapacity, int maxCapacity) {
     	this.allocator = pooledAllocator;
     	this.unpooledAllocator= unpooledAllocator;
     	this.poolingPolicy = poolingPolicy;
@@ -83,8 +77,6 @@ public class ByteBufAllocatorTest {
     	this.leakDetectionPolicy = leakDetectionPolicy;
     	this.initialCapacity = initialCapacity;
     	this.maxCapacity = maxCapacity;
-    	this.outOfMemError = outOfMemError;
-    	this.noHeapError = noHeapError;
 
     	allocator = ByteBufAllocatorBuilder.create()
     			.pooledAllocator(pooledAllocator)
@@ -114,9 +106,6 @@ public class ByteBufAllocatorTest {
     		if (pooledAllocator == PooledByteBufAllocator.DEFAULT) {
     			assertEquals(PooledByteBufAllocator.DEFAULT, buffer.alloc());
     			assertEquals(2 * Runtime.getRuntime().availableProcessors(), ((PooledByteBufAllocator) buffer.alloc()).metric().numDirectArenas());
-    		}
-    		else {
-                    assertEquals(poolingConcurrency, ((PooledByteBufAllocator) buffer.alloc()).metric().numDirectArenas());
     		}
     	}
     	else {
